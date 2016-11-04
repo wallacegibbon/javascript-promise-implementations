@@ -162,7 +162,7 @@ Promise.all = function(promises) {
 // Promise.race
 Promise.race = function(promises) {
   if (!Array.isArray(promises))
-    throw new TypeError("Promise.all only accept Array argument");
+    throw new TypeError("Promise.race only accept Array argument");
 
   return new Promise((resolve, reject) => {
     promises.forEach((p) => p.then(resolve, reject));

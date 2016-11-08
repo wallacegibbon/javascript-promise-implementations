@@ -9,5 +9,7 @@ function myReadFile(fileName) {
 
 var x = myReadFile("/tmp/a.txt");
 
+console.log("before 'then'");
+
 setTimeout(() => x.then(console.log), 3000);
 

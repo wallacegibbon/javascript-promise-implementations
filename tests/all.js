@@ -10,8 +10,7 @@ var p2 = new Promise((resolve, reject) => {
 
 var p3 = Promise.resolve(3);
 
-Promise.all([p1, p2, p3])
-.then(console.log.bind(console));
+Promise.all([p1, p2, p3]).then(console.log);
 
 console.log("finished");
 

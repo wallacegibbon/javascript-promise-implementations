@@ -62,7 +62,7 @@ Promise.resolve(1)
 .then(taskC)
 .catch(onReject2)
 .then(taskD)
-.catch(console.log.bind(console));
+.catch(console.error);
 
 console.log("last line");
 

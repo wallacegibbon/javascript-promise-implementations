@@ -11,5 +11,5 @@ var x = myReadFile("/tmp/a.txt");
 
 console.log("before 'then'");
 
-setTimeout(() => x.then(console.log), 3000);
+setTimeout(() => x.then(console.log).catch(console.error), 3000);
 

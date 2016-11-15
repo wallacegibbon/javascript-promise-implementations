@@ -44,7 +44,8 @@ function Promise(fn) {
   this._value;
   this._reason;
 
-  fn(resolve.bind(this), reject.bind(this));
+  //fn(resolve.bind(this), reject.bind(this));
+  setTimeout(() => fn(resolve.bind(this), reject.bind(this)));
 }
 
 

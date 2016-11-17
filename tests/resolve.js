@@ -1,3 +1,3 @@
-Promise = require("../P");
+Promise = require("../P")
 
-Promise.resolve(1).then(console.log);
+Promise.resolve(1).then(console.log)

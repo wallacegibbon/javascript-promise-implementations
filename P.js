@@ -1,4 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////
+// the status constants
+var PENDING = 0, FULFILLED = 1, REJECTED = 2
+
+
+//////////////////////////////////////////////////////////////////////////////
 // Some utils
 function isFunction(obj) {
   return typeof obj === "function"
@@ -16,7 +21,7 @@ function checkArray(obj) {
 //////////////////////////////////////////////////////////////////////////////
 function resolve(value) {
   this._value = value
-  this._status = "fulfilled"
+  this._status = FULFILLED
 
   var fn
   while (fn = this._resolves.shift())
@@ -38,7 +43,7 @@ function Promise(fn) {
   if (!isFunction(fn))
     throw new TypeError("Promise argument error:" + fn.toString())
 
-  this._status = "pending"
+  this._status = PENDING
   this._resolves = []
   this._rejects = []
   this._value
@@ -95,11 +100,11 @@ function thenHandler(nRes, nRej, pResFn, pRejFn, pP) {
   var rjFn = rejectWrapper(nRes, nRej, pRejFn)
 
   switch (pP._status) {
-  case "pending":
+  case PENDING:
     pP._resolves.push(rsFn)
     pP._rejects.push(rjFn)
     break
-  case "fulfilled":
+  case FULFILLED:
     rsFn(pP._value)
     break
   case "rejected":

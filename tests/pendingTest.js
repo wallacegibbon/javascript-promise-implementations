@@ -13,3 +13,4 @@ console.log("before 'then'")
 
 setTimeout(() => x.then(console.log).catch(console.error), 3000)
 
+console.log("after 'then'")

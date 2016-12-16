@@ -30,7 +30,7 @@ function resolve(value) {
 
 function reject(reason) {
   this._reason = reason
-  this._status = "rejected"
+  this._status = REJECTED
 
   var fn
   while (fn = this._rejects.shift())
@@ -106,7 +106,7 @@ function thenHandler(nRes, nRej, pResFn, pRejFn, pP) {
   case FULFILLED:
     rsFn(pP._value)
     break
-  case "rejected":
+  case REJECTED:
     rjFn(pP._reason)
     break
   default:

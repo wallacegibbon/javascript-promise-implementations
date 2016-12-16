@@ -20,7 +20,7 @@ function checkArray(obj) {
 
 //////////////////////////////////////////////////////////////////////////////
 function resolve(value) {
-  this._value = value
+  this._v = value
   this._status = FULFILLED
 
   var fn
@@ -29,7 +29,7 @@ function resolve(value) {
 }
 
 function reject(reason) {
-  this._reason = reason
+  this._v = reason
   this._status = REJECTED
 
   var fn
@@ -46,8 +46,7 @@ function Promise(fn) {
   this._status = PENDING
   this._resolves = []
   this._rejects = []
-  this._value
-  this._reason
+  this._v = undefined
 
   fn(resolve.bind(this), reject.bind(this))
 }
@@ -104,10 +103,10 @@ function thenHandler(nRes, nRej, pResFn, pRejFn, pP) {
     pP._rejects.push(rjFn)
     break
   case FULFILLED:
-    rsFn(pP._value)
+    rsFn(pP._v)
     break
   case REJECTED:
-    rjFn(pP._reason)
+    rjFn(pP._v)
     break
   default:
     throw new Error(`invalid status:${pP._status}`)

@@ -18,4 +18,4 @@ x.then(console.log)
 
 console.log("start...")
 
-//setTimeout(() => x.then(console.log, 4000))
+setTimeout(() => x.then(console.log), 4000)

@@ -1,16 +1,13 @@
-var fs = require("fs")
-Promise = require("../P")
+const fs = require("fs");
+const Promise = require("..");
 
-function myReadFile(fileName) {
-	return new Promise((res, rej) => {
-		fs.readFile(fileName, (e, d) => e ? rej(e) : res(d.toString()))
-	})
+function readFile(fileName) {
+  return new Promise((res, rej) => {
+    fs.readFile(fileName, (e, d) => e ? rej(e) : res(d.toString()));
+  })
 }
 
-var x = myReadFile("/tmp/a.txt")
+setTimeout(() => readFile("./pendingTest.js").then(console.log, console.error),
+           3000);
 
-console.log("before 'then'")
-
-setTimeout(() => x.then(console.log).catch(console.error), 3000)
-
-console.log("after 'then'")
+console.log("...");

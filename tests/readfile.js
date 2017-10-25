@@ -1,11 +1,14 @@
-var fs = require("fs")
+const fs = require("fs");
+const Promise = require("..");
 
-var Promise = require("../P")
+function readFile(fileName) {
+  return new Promise((res, rej) => {
+    fs.readFile(fileName, (e, d) => e ? rej(e) : res(d));
+  });
+}
 
-var f = "/tmp/a.txt"
-
-new Promise((res, rej) => fs.readFile(f, (e, d) => e ? rej(e) : res(d)))
+readFile("./readfile.js")
 .then(d => console.log("raw:\n", d, "\ndecoded:\n", d.toString()))
-.catch(e => console.error(`failed:${e.message}`))
+.catch(e => console.error(`failed:${e.message}`));
 
 

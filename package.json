@@ -1,0 +1,18 @@
+{
+  "name": "minipromise",
+  "description": "A simple Promise implemented in ES6, for help people understand how promise works",
+  "version": "0.1.0",
+  "author": {
+    "name": "Wallace Gibbon",
+    "email": "wallacegibbon@aliyun.com"
+  },
+  "keywords": [
+    "ES6",
+    "Promise"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wallacegibbon/minipromise.git"
+  }
+}

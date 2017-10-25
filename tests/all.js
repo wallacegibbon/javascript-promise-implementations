@@ -1,15 +1,19 @@
-var Promise = require("../P")
+function log() {
+  console.log.bind(null, "---").apply(console, arguments);
+}
 
-var p1 = new Promise((resolve, reject) => {
-	setTimeout(() => resolve("p1"), 1000)
-})
+function error() {
+  console.error.bind(null, "***").apply(console, arguments);
+}
 
-var p2 = new Promise((resolve, reject) => {
-	setTimeout(() => resolve("p2"), 2000)
-})
+const Promise = require("..");
 
-var p3 = Promise.resolve(3)
+const p1 = new Promise((res, _) => setTimeout(() => res("p1"), 1000));
+const p2 = new Promise((res, _) => setTimeout(() => res("p2"), 2000));
+const p3 = Promise.resolve(3);
+//const p3 = Promise.reject(3);
 
-Promise.all([ p1, p2, p3 ]).then(console.log)
+Promise.all([ p1, p2, p3 ]).then(log, error);
 
-console.log("finished")
+console.log("...");
+

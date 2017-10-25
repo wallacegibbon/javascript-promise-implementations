@@ -1,21 +1,19 @@
-var Promise = require("../P")
+function log() {
+  console.log.bind(null, "---").apply(console, arguments);
+}
 
-var p1 = new Promise(function (resolve, reject) {
-	setTimeout(() => resolve("p1"), 3000)
-})
+function error() {
+  console.error.bind(null, "***").apply(console, arguments);
+}
 
-var p2 = new Promise(function (resolve, reject) {
-	setTimeout(() => resolve("p2"), 2000)
-})
+const Promise = require("..");
 
-var p3 = new Promise(function (resolve, reject) {
-	setTimeout(() => resolve("p3"), 1000)
-})
+const p1 = new Promise((res, _) => setTimeout(() => res("p1"), 3000));
+const p2 = new Promise((res, _) => setTimeout(() => res("p2"), 2000));
+const p3 = Promise.resolve(3);
+//const p3 = Promise.reject(3);
 
-var x = Promise.race([p1, p2, p3])
+Promise.race([p1, p2, p3]).then(log, error);
 
-x.then(console.log)
+console.log("...");
 
-console.log("start...")
-
-setTimeout(() => x.then(console.log), 4000)

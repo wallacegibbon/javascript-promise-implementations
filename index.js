@@ -1,66 +1,36 @@
-/**
- * A Promise object has and only has 3 kind of states. Use numbers to represend
- * states for better performance.
- */
-const PENDING = 0, FULFILLED = 1, REJECTED = 2;
-
-
-
 
 class Promise {
   /**
    * A Promise is nothing more than an object that holds some states and wraps
    * the callback to make it looks better.
    *
-   * To create a Promise Object, you need to give a function as argument.
+   * @param {Function} fn
    */
   constructor(fn) {
     if (!isFunction(fn))
       throw new TypeError("Pass function object to create a Promise object");
 
-    this._status = PENDING;
-    this._resolves = [];
-    this._rejects = [];
-    this._v = undefined;
+    this._fnArr = { fulfilled: [], rejected: [] };
+    this._status = "pending";
+    this._v;
 
-    setTimeout(fn, null, this.resolve.bind(this), this.reject.bind(this));
-    //fn(this.resolve.bind(this), this.reject.bind(this));
-  }
+    function handle(val, status) {
+      if (this._status !== "pending")
+        return;
 
+      this._v = val;
+      this._status = status;
 
-  /**
-   * This is one of the functions that users use to handle the Promise object.
-   *
-   * This function should only be called once.
-   */
-  resolve(v) {
-    if (this._status !== PENDING)
-      return;
+      var fn;
+      while (fn = this._fnArr[status].shift())
+        fn.call(this, val);
+    }
 
-    this._v = v;
-    this._status = FULFILLED;
+    const res = v => handle.call(this, v, "fulfilled");
+    const rej = v => handle.call(this, v, "rejected");
 
-    var fn;
-    while (fn = this._resolves.shift())
-      fn.call(this, v);
-  }
-
-
-  /**
-   * This is the other function that users use to handle the Promise object.
-   *
-   * This function should only be called once, too.
-   */
-  reject(v) {
-    if (this._status !== PENDING)
-      return;
-
-    this._v = v;
-    this._status = REJECTED;
-
-    var fn;
-    while (fn = this._rejects.shift())
-      fn.call(this, v);
+    setTimeout(fn, null, res, rej);
+    //fn(res, rej);
   }
 
 
@@ -106,16 +76,16 @@ class Promise {
       }
 
       switch (this._status) {
-      case PENDING:
-        this._resolves.push(realResFn);
-        this._rejects.push(realRejFn);
+      case "pending":
+        this._fnArr.fulfilled.push(realResFn);
+        this._fnArr.rejected.push(realRejFn);
         break;
 
-      case FULFILLED:
+      case "fulfilled":
         realResFn(this._v);
         break;
 
-      case REJECTED:
+      case "rejected":
         realRejFn(this._v);
         break;
       }

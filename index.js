@@ -4,33 +4,34 @@ class Promise {
    * A Promise is nothing more than an object that holds some states and wraps
    * the callback to make it looks better.
    *
+   * promise.then(fn1, fn2) may get called for multiple times, use array to
+   * store those functions.
+   *
    * @param {Function} fn
    */
   constructor(fn) {
     if (!isFunction(fn))
       throw new TypeError("Pass function object to create a Promise object");
 
-    this._fnArr = { fulfilled: [], rejected: [] };
-    this._status = "pending";
-    this._v;
+    this.fnArr = { fulfilled: [], rejected: [] };
+    this.status = "pending";
 
-    function handle(val, status) {
-      if (this._status !== "pending")
-        return;
-
-      this._v = val;
-      this._status = status;
-
-      var fn;
-      while (fn = this._fnArr[status].shift())
-        fn.call(this, val);
-    }
-
-    const res = v => handle.call(this, v, "fulfilled");
-    const rej = v => handle.call(this, v, "rejected");
+    const res = handle.bind(this, "fulfilled");
+    const rej = handle.bind(this, "rejected");
 
     setTimeout(fn, null, res, rej);
     //fn(res, rej);
+
+    function handle(status, val) {
+      if (this.status !== "pending")
+        return;
+
+      this.status = status;
+      this.v = val;
+      var fn;
+      while (fn = this.fnArr[status].shift())
+        fn.call(this, val);
+    }
   }
 
 
@@ -75,18 +76,18 @@ class Promise {
         }
       }
 
-      switch (this._status) {
+      switch (this.status) {
       case "pending":
-        this._fnArr.fulfilled.push(realResFn);
-        this._fnArr.rejected.push(realRejFn);
+        this.fnArr.fulfilled.push(realResFn);
+        this.fnArr.rejected.push(realRejFn);
         break;
 
       case "fulfilled":
-        realResFn(this._v);
+        realResFn(this.v);
         break;
 
       case "rejected":
-        realRejFn(this._v);
+        realRejFn(this.v);
         break;
       }
     });

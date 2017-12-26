@@ -1,5 +1,5 @@
 
-class Promise {
+class MiniPromise {
   /**
    * A Promise is nothing more than an object that holds some states and wraps
    * the callback to make it looks better.
@@ -44,7 +44,7 @@ class Promise {
    * write this `then`.
    */
   then(resFn, rejFn) {
-    return new Promise((res, rej) => {
+    return new MiniPromise((res, rej) => {
 
       function realResFn(v) {
         if (!isFunction(resFn))
@@ -113,7 +113,7 @@ class Promise {
     if (!Array.isArray(promiseArr))
       throw new TypeError("Promise.all need Array object as argument");
 
-    return new Promise((res, rej) => {
+    return new MiniPromise((res, rej) => {
       var count = promiseArr.length;
       const result = [];
 
@@ -142,7 +142,7 @@ class Promise {
     if (!Array.isArray(promiseArr))
       throw new TypeError("Promise.race need Array object as argument");
 
-    return new Promise((res, rej) => {
+    return new MiniPromise((res, rej) => {
       promiseArr.forEach(p => p.then(res, rej));
     });
   }
@@ -153,7 +153,7 @@ class Promise {
    * e.g. Promise.resolve(1).then(console.log);
    */
   static resolve(v) {
-    return new Promise((res, _) => res(v));
+    return new MiniPromise((res, _) => res(v));
   }
 
 
@@ -161,7 +161,7 @@ class Promise {
    * Just like Promise.resolve, but start with an rejection.
    */
   static reject(v) {
-    return new Promise((_, rej) => rej(v));
+    return new MiniPromise((_, rej) => rej(v));
   }
 }
 
@@ -180,6 +180,6 @@ function isFunction(obj) {
 
 
 
-module.exports = Promise;
+module.exports = MiniPromise;
 
 

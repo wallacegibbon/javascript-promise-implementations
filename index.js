@@ -1,4 +1,3 @@
-
 class MiniPromise {
   /**
    * A Promise is nothing more than an object that holds some states and wraps
@@ -10,27 +9,60 @@ class MiniPromise {
    * @param {Function} fn
    */
   constructor(fn) {
-    if (!isFunction(fn))
-      throw new TypeError("Pass function object to create a Promise object");
-
-    this.fnArr = { fulfilled: [], rejected: [] };
+    if (!isFunction(fn)) {
+      throw new TypeError("constructor argument have to be a function");
+    }
     this.status = "pending";
+    this.fulfilledFns = [];
+    this.rejectedFns = [];
 
-    const res = handle.bind(this, "fulfilled");
-    const rej = handle.bind(this, "rejected");
+    const res = this.onFulfilled.bind(this);
+    const rej = this.onRejected.bind(this);
 
     setTimeout(fn, null, res, rej);
     //fn(res, rej);
+  }
 
-    function handle(status, val) {
-      if (this.status !== "pending")
-        return;
 
-      this.status = status;
-      this.v = val;
-      var fn;
-      while (fn = this.fnArr[status].shift())
-        fn.call(this, val);
+  /**
+   * If `val` is a Promise Object, it will be unwrapped recursively.
+   */
+  onFulfilled(val) {
+    if (isThenable(val)) {
+      return val.then(this.onFulfilled.bind(this), this.onRejected.bind(this))
+    }
+    if (this.status !== "pending") {
+      throw new Error(`onFulfilled was called multiple times`);
+    }
+    this.status = 'fulfilled';
+    this.val = val;
+    var fn;
+    while (fn = this.fulfilledFns.shift()) {
+      fn.call(this, val);
+    }
+  }
+
+  /**
+   * If `err` is a Promise Object, it will be unwrapped recursively.
+   *
+   * Even if the Promise Object `err` will be fulfilled, the fullfilled value
+   * will be handled by onRejected.
+   *
+   * I am not sure whether this is the same as the Promise standard,
+   * but it make sense.
+   */
+  onRejected(err) {
+    if (isThenable(err)) {
+      return err.then(this.onRejected.bind(this), this.onRejected.bind(this))
+    }
+    if (this.status !== "pending") {
+      throw new Error(`onRejected was called multiple times`);
+    }
+    this.status = 'rejected';
+    this.err = err
+    var fn;
+    while (fn = this.rejectedFns.shift()) {
+      fn.call(this, err);
     }
   }
 
@@ -45,6 +77,20 @@ class MiniPromise {
    */
   then(resFn, rejFn) {
     return new MiniPromise((res, rej) => {
+      switch (this.status) {
+      case "pending":
+        this.fulfilledFns.push(realResFn);
+        this.rejectedFns.push(realRejFn);
+        break;
+
+      case "fulfilled":
+        realResFn(this.val);
+        break;
+
+      case "rejected":
+        realRejFn(this.err);
+        break;
+      }
 
       function realResFn(v) {
         if (!isFunction(resFn))
@@ -75,21 +121,6 @@ class MiniPromise {
           rej(e);
         }
       }
-
-      switch (this.status) {
-      case "pending":
-        this.fnArr.fulfilled.push(realResFn);
-        this.fnArr.rejected.push(realRejFn);
-        break;
-
-      case "fulfilled":
-        realResFn(this.v);
-        break;
-
-      case "rejected":
-        realRejFn(this.v);
-        break;
-      }
     });
   }
 
@@ -116,10 +147,7 @@ class MiniPromise {
     return new MiniPromise((res, rej) => {
       var count = promiseArr.length;
       const result = [];
-
-      promiseArr.forEach((p, idx) => {
-        p.then(handle(idx), rej);
-      });
+      promiseArr.forEach((p, idx) => p.then(handle(idx), rej));
 
       /* Use closure to hold index */
       function handle(idx) {
@@ -142,9 +170,8 @@ class MiniPromise {
     if (!Array.isArray(promiseArr))
       throw new TypeError("Promise.race need Array object as argument");
 
-    return new MiniPromise((res, rej) => {
-      promiseArr.forEach(p => p.then(res, rej));
-    });
+    return new MiniPromise((res, rej) =>
+      promiseArr.forEach(p => p.then(res, rej)));
   }
 
 

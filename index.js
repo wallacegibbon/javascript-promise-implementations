@@ -10,17 +10,17 @@ class MiniPromise {
    */
   constructor(fn) {
     if (!isFunction(fn)) {
-      throw new TypeError("constructor argument have to be a function");
+      throw new TypeError("constructor argument have to be a function")
     }
-    this.status = "pending";
-    this.fulfilledFns = [];
-    this.rejectedFns = [];
+    this.status = "pending"
+    this.fulfilledFns = []
+    this.rejectedFns = []
 
-    const res = this.onFulfilled.bind(this);
-    const rej = this.onRejected.bind(this);
+    const res = this.onFulfilled.bind(this)
+    const rej = this.onRejected.bind(this)
 
-    setTimeout(fn, null, res, rej);
-    //fn(res, rej);
+    setTimeout(fn, null, res, rej)
+    //fn(res, rej)
   }
 
 
@@ -32,37 +32,35 @@ class MiniPromise {
       return val.then(this.onFulfilled.bind(this), this.onRejected.bind(this))
     }
     if (this.status !== "pending") {
-      throw new Error(`onFulfilled was called multiple times`);
+      throw new Error(`onFulfilled was called multiple times`)
     }
-    this.status = 'fulfilled';
-    this.val = val;
-    var fn;
+    this.status = 'fulfilled'
+    this.val = val
+    var fn
     while (fn = this.fulfilledFns.shift()) {
-      fn.call(this, val);
+      fn.call(this, val)
     }
   }
 
   /**
-   * If `err` is a Promise Object, it will be unwrapped recursively.
-   *
-   * Even if the Promise Object `err` will be fulfilled, the fullfilled value
-   * will be handled by onRejected.
-   *
-   * I am not sure whether this is the same as the Promise standard,
-   * but it make sense.
+   * Unlike `val`, when `err` is a Promise Object, it will not be unwrapped as this
+   * is not how Promise should be used.
+   * The built-in Promise will pass it to rejectedFns directly.
+   * To make things clear, my implementation will reject a clearer information.
    */
   onRejected(err) {
-    if (isThenable(err)) {
-      return err.then(this.onRejected.bind(this), this.onRejected.bind(this))
-    }
     if (this.status !== "pending") {
-      throw new Error(`onRejected was called multiple times`);
+      throw new Error(`onRejected was called multiple times`)
     }
-    this.status = 'rejected';
-    this.err = err
-    var fn;
+    if (isThenable(err)) {
+      this.err = 'onRejected does not accept Promise argument'
+    } else {
+      this.err = err
+    }
+    this.status = 'rejected'
+    var fn
     while (fn = this.rejectedFns.shift()) {
-      fn.call(this, err);
+      fn.call(this, err)
     }
   }
 
@@ -79,49 +77,53 @@ class MiniPromise {
     return new MiniPromise((res, rej) => {
       switch (this.status) {
       case "pending":
-        this.fulfilledFns.push(realResFn);
-        this.rejectedFns.push(realRejFn);
-        break;
+        this.fulfilledFns.push(realResFn)
+        this.rejectedFns.push(realRejFn)
+        break
 
       case "fulfilled":
-        realResFn(this.val);
-        break;
+        realResFn(this.val)
+        break
 
       case "rejected":
-        realRejFn(this.err);
-        break;
+        realRejFn(this.err)
+        break
       }
 
-      function realResFn(v) {
-        if (!isFunction(resFn))
-          return res(v);
-
+      /**
+       * Since the argument `val` comes from `onFulfilled`, it will never be
+       * a Promise object. (onFulfilled unwrapped Promise recursively)
+       */
+      function realResFn(val) {
+        if (!isFunction(resFn)) {
+          return res(val)
+        }
         try {
-          var r = resFn(v);
-          if (isThenable(r))
-            r.then(res, rej);
-          else
-            res(r);
+          hookNext(resFn(val))
         } catch (e) {
-          rej(e);
+          rej(e)
         }
       }
 
-      function realRejFn(v) {
-        if (!isFunction(rejFn))
-          return rej(v);
-
+      function realRejFn(err) {
+        if (!isFunction(rejFn)) {
+          return rej(err)
+        }
         try {
-          var r = rejFn(v);
-          if (isThenable(r))
-            r.then(res, rej);
-          else
-            res(r);
+          hookNext(rejFn(err))
         } catch (e) {
-          rej(e);
+          rej(e)
         }
       }
-    });
+
+      function hookNext(r) {
+        if (isThenable(r)) {
+          r.then(res, rej)
+        } else {
+          res(r)
+        }
+      }
+    })
   }
 
 
@@ -129,7 +131,7 @@ class MiniPromise {
    * `promise.catch(rejFn)` is nothing but `promise.then(null, rejFn)`
    */
   catch (rejFn) {
-    return this.then(null, rejFn);
+    return this.then(null, rejFn)
   }
 
 
@@ -141,24 +143,25 @@ class MiniPromise {
    * and reject directly.
    */
   static all(promiseArr) {
-    if (!Array.isArray(promiseArr))
-      throw new TypeError("Promise.all need Array object as argument");
+    if (!Array.isArray(promiseArr)) {
+      throw new TypeError("Promise.all need Array object as argument")
+    }
 
     return new MiniPromise((res, rej) => {
-      var count = promiseArr.length;
-      const result = [];
-      promiseArr.forEach((p, idx) => p.then(handle(idx), rej));
+      var count = promiseArr.length
+      const result = []
+      promiseArr.forEach((p, idx) => p.then(handle(idx), rej))
 
       /* Use closure to hold index */
       function handle(idx) {
         return v => {
-          result[idx] = v;
-
-          if (--count === 0)
-            res(result);
-        };
+          result[idx] = v
+          if (--count === 0) {
+            res(result)
+          }
+        }
       }
-    });
+    })
   }
 
 
@@ -167,20 +170,20 @@ class MiniPromise {
    * who call `then` first.
    */
   static race(promiseArr) {
-    if (!Array.isArray(promiseArr))
-      throw new TypeError("Promise.race need Array object as argument");
-
+    if (!Array.isArray(promiseArr)) {
+      throw new TypeError("Promise.race need Array object as argument")
+    }
     return new MiniPromise((res, rej) =>
-      promiseArr.forEach(p => p.then(res, rej)));
+      promiseArr.forEach(p => p.then(res, rej)))
   }
 
 
   /**
    * If you need to start a Promise chain from a basic value, just use this.
-   * e.g. Promise.resolve(1).then(console.log);
+   * e.g. Promise.resolve(1).then(console.log)
    */
   static resolve(v) {
-    return new MiniPromise((res, _) => res(v));
+    return new MiniPromise((res, _) => res(v))
   }
 
 
@@ -188,7 +191,7 @@ class MiniPromise {
    * Just like Promise.resolve, but start with an rejection.
    */
   static reject(v) {
-    return new MiniPromise((_, rej) => rej(v));
+    return new MiniPromise((_, rej) => rej(v))
   }
 }
 
@@ -197,16 +200,16 @@ class MiniPromise {
  * Some utilitiy functions who is needed for multiple times.
  */
 function isThenable(obj) {
-  return obj && isFunction(obj.then);
+  return obj && isFunction(obj.then)
 }
 
 
 function isFunction(obj) {
-  return typeof obj === "function";
+  return typeof obj === "function"
 }
 
 
 
-module.exports = MiniPromise;
+module.exports = MiniPromise
 
 

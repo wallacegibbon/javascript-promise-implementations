@@ -1,9 +1,9 @@
 function log() {
-  console.log.bind(null, "---").apply(console, arguments)
+	console.log.bind(null, "---").apply(console, arguments)
 }
 
 function error() {
-  console.error.bind(null, "***").apply(console, arguments)
+	console.error.bind(null, "***").apply(console, arguments)
 }
 
 const Promise = require("..")
@@ -16,4 +16,3 @@ const p3 = Promise.resolve(3)
 Promise.race([p1, p2, p3]).then(log, error)
 
 console.log("...")
-

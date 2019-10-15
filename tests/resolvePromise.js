@@ -2,7 +2,7 @@ const MiniPromise = require('..')
 
 
 function sleep(ms) {
-  return new Promise((res, _) => setTimeout(res, ms))
+	return new Promise((res, _) => setTimeout(res, ms))
 }
 
 console.log('--- native Promise ---')

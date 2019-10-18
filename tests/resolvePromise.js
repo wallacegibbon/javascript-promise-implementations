@@ -1,7 +1,8 @@
 const MiniPromise = require('..')
 
 
-function sleep(ms) {
+function sleep(ms)
+{
 	return new Promise((res, _) => setTimeout(res, ms))
 }
 

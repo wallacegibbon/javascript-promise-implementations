@@ -1,8 +1,10 @@
 const fs = require("fs")
 const Promise = require("..")
 
-function readFile(fileName) {
-	return new Promise((res, rej) => {
+function readFile(fileName)
+{
+	return new Promise((res, rej) =>
+	{
 		fs.readFile(fileName, (e, d) => e ? rej(e) : res(d.toString()))
 	})
 }

@@ -1,10 +1,12 @@
 const MiniPromise = require('..')
 
-function delay(ms) {
+function delay(ms)
+{
 	return new Promise((res, _) => setTimeout(res, ms))
 }
 
-async function delay2(ms) {
+async function delay2(ms)
+{
 	return (
 		new Promise((res1, _) =>
 			res1(new Promise((res2, _) => setTimeout(res2, ms))))

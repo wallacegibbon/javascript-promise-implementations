@@ -1,8 +1,10 @@
-function log() {
+function log()
+{
 	console.log.bind(null, "---").apply(console, arguments)
 }
 
-function error() {
+function error()
+{
 	console.error.bind(null, "***").apply(console, arguments)
 }
 

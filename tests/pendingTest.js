@@ -1,12 +1,9 @@
 const fs = require("fs")
 const Promise = require("..")
 
-function readFile(fileName)
-{
+function readFile(fileName) {
 	return new Promise((res, rej) =>
-	{
-		fs.readFile(fileName, (e, d) => e ? rej(e) : res(d.toString()))
-	})
+		fs.readFile(fileName, (e, d) => e ? rej(e) : res(d.toString())))
 }
 
 setTimeout(

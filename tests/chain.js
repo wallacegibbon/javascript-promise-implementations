@@ -22,41 +22,35 @@
 
 const Promise = require("..")
 
-function taskA(v)
-{
+function taskA(v) {
 	console.log("taskA, arg:", v)
 	//return Promise.reject("error in taskA")
 	throw new Error("error in taskA")
 }
 
-function taskB(v)
-{
+function taskB(v) {
 	console.log("taskB, arg:", v)
 	return v
 }
 
-function onReject1(e)
-{
+function onReject1(e) {
 	console.log("onReject1:", e.toString())
 	//return Promise.resolve("reset") // this works, too
 	return "reset"
 }
 
-function taskC(v)
-{
+function taskC(v) {
 	console.log("taskC, arg:", v)
 	// if throw Error here, will be caught by onReject2, not onReject1
 	return Promise.reject("error in taskC")
 }
 
-function onReject2(e)
-{
+function onReject2(e) {
 	console.log("onReject2:", e.toString())
 	return "reset"
 }
 
-function taskD(v)
-{
+function taskD(v) {
 	console.log("taskD, arg:", v)
 	return v
 }

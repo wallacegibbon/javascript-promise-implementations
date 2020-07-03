@@ -1,18 +1,18 @@
 {
-	"name": "minipromise",
-	"description": "A simple Promise implementation written in ES6",
-	"version": "1.4.2",
-	"author": {
-		"name": "Wallace Gibbon",
-		"email": "wallacegibbon@aliyun.com"
-	},
-	"keywords": [
-		"Promise",
-		"ES6"
-	],
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/wallacegibbon/minipromise.git"
-	}
+  "name": "minipromise",
+  "description": "A simple Promise implementation written in ES6",
+  "version": "1.5.0",
+  "author": {
+    "name": "Wallace Gibbon",
+    "email": "wallacegibbon@aliyun.com"
+  },
+  "keywords": [
+    "Promise",
+    "ES6"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wallacegibbon/minipromise.git"
+  }
 }

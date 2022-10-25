@@ -6,3 +6,4 @@ As Promise is now supported by all browsers and Node.js, it's not recommended
 to use this implementation in production environment.
 
 This project is here to help people who want to know how Promise works.
+

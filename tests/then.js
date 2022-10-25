@@ -1,7 +1,7 @@
 // Whatever the callback of `then` returns, it will be wrapped into a Promise
 // `then` will always return a new Promise object.
 
-const Promise = require("..");
+import { MiniPromise as Promise  } from "../mod.js";
 
 const a = new Promise((resolve) => resolve(100));
 const b = a.then((value) => console.log("value is", value));

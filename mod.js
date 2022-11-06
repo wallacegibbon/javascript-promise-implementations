@@ -14,9 +14,10 @@ export class MiniPromise {
     this.status = "pending";
     this.fulfilled_fns = [];
     this.rejected_fns = [];
-    const res = this.on_fulfilled.bind(this);
-    const rej = this.on_rejected.bind(this);
-    fn(res, rej);
+    fn(
+      val => queueMicrotask(() => this.on_fulfilled(val)),
+      err => queueMicrotask(() => this.on_rejected(err)),
+    );
   }
 
   /// If `val` is a Promise Object, it will be unwrapped recursively.
@@ -169,7 +170,6 @@ export class MiniPromise {
 function is_thenable(obj) {
   return obj && is_function(obj.then);
 }
-
 
 function is_function(obj) {
   return typeof obj === "function";

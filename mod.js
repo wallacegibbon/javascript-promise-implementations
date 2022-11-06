@@ -15,8 +15,8 @@ export class MiniPromise {
     this.fulfilled_fns = [];
     this.rejected_fns = [];
     fn(
-      val => queueMicrotask(() => this.on_fulfilled(val)),
-      err => queueMicrotask(() => this.on_rejected(err)),
+      val => this.on_fulfilled(val),
+      err => this.on_rejected(err),
     );
   }
 
@@ -30,10 +30,9 @@ export class MiniPromise {
 
     this.status = "fulfilled";
     this.val = val;
-
-    var fn;
-    while ((fn = this.fulfilled_fns.shift()))
-      fn(val);
+    queueMicrotask(() =>
+      this.fulfilled_fns.forEach(fn => fn(val))
+    );
   }
 
   /// Unlike `val`, when `err` is a Promise Object, it will not be unwrapped as
@@ -50,9 +49,9 @@ export class MiniPromise {
       this.err = err;
 
     this.status = "rejected";
-    let fn;
-    while ((fn = this.rejected_fns.shift()))
-      fn(err);
+    queueMicrotask(() =>
+      this.rejected_fns.forEach(fn => fn(err))
+    );
   }
 
   /// `promise.then` is the most important method for Promise. It's the key to
@@ -93,10 +92,10 @@ export class MiniPromise {
           this.rejected_fns.push(real_rej_fn);
           break;
         case "fulfilled":
-          real_res_fn(this.val);
+          queueMicrotask(() => real_res_fn(this.val));
           break;
         case "rejected":
-          real_rej_fn(this.err);
+          queueMicrotask(() => real_rej_fn(this.err));
           break;
       }
     });

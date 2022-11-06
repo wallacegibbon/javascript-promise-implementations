@@ -1,18 +1,37 @@
 import { MiniPromise } from "../mod.js";
 
-async function test_promise(promise_class) {
-  console.log(`[${promise_class.name}] start`);
+async function test_1(promise_class) {
+  console.log(`[${promise_class.name}] test1 start`);
 
   new promise_class((res, _rej) => {
-    console.log(`[${promise_class.name}] emmm...`);
+    console.log(`[${promise_class.name}] test1 emmm...`);
     res();
   }).then(() => {
-    console.log(`[${promise_class.name}] then`);
+    console.log(`[${promise_class.name}] test1 then`);
   });
 
-  console.log(`[${promise_class.name}] end`);
+  console.log(`[${promise_class.name}] test1 end`);
 }
 
-test_promise(Promise);
-await new Promise((res, _) => setTimeout(res, 1000));
-test_promise(MiniPromise);
+async function test_2(promise_class) {
+  console.log(`[${promise_class.name}] test2 start`);
+
+  let res1;
+  new promise_class((res, _rej) => {
+    console.log(`[${promise_class.name}] test2 emmm...`);
+    res1 = res;
+  }).then(() => {
+    console.log(`[${promise_class.name}] test2 then`);
+  });
+
+  res1();
+  console.log(`[${promise_class.name}] test2 end`);
+}
+
+test_1(Promise);
+await new Promise((res, _) => setTimeout(res, 500));
+test_1(MiniPromise);
+await new Promise((res, _) => setTimeout(res, 500));
+test_2(Promise);
+await new Promise((res, _) => setTimeout(res, 500));
+test_2(MiniPromise);

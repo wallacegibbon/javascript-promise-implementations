@@ -8,9 +8,9 @@ export class MiniPromise {
   ///
   /// @param {Function} fn
   constructor(fn) {
-    if (!is_function(fn))
+    if (!is_function(fn)) {
       throw new TypeError("constructor argument have to be a function");
-
+    }
     this.status = "pending";
     this.fulfilled_fns = [];
     this.rejected_fns = [];
@@ -22,12 +22,12 @@ export class MiniPromise {
 
   /// If `val` is a Promise Object, it will be unwrapped recursively.
   on_fulfilled(val) {
-    if (is_thenable(val))
+    if (is_thenable(val)) {
       return val.then(this.on_fulfilled.bind(this), this.on_rejected.bind(this));
-
-    if (this.status !== "pending")
+    }
+    if (this.status !== "pending") {
       throw new Error(`on_fulfilled was called multiple times`);
-
+    }
     this.status = "fulfilled";
     this.val = val;
     queueMicrotask(() =>
@@ -40,14 +40,14 @@ export class MiniPromise {
   /// The built-in Promise will pass it to rejected_fns directly.
   /// To make things clear, my implementation will reject a clearer information.
   on_rejected(err) {
-    if (this.status !== "pending")
+    if (this.status !== "pending") {
       throw new Error(`on_rejected was called multiple times`);
-
-    if (is_thenable(err))
+    }
+    if (is_thenable(err)) {
       this.err = "on_rejected does not accept Promise argument";
-    else
+    } else {
       this.err = err;
-
+    }
     this.status = "rejected";
     queueMicrotask(() =>
       this.rejected_fns.forEach(fn => fn(err))
@@ -63,25 +63,21 @@ export class MiniPromise {
   then(res_fn, rej_fn) {
     return new MiniPromise((res, rej) => {
       const hook_next = (r) => {
-        if (is_thenable(r)) r.then(res, rej);
-        else res(r);
+        if (is_thenable(r)) { r.then(res, rej); }
+        else { res(r); }
       };
 
       /// Since the argument `val` comes from `on_fulfilled`,
       /// it will never be a Promise object.
       /// (on_fulfilled unwrapped Promise recursively)
       const real_res_fn = (val) => {
-        if (!is_function(res_fn))
-          return res(val);
-
+        if (!is_function(res_fn)) { return res(val); }
         try { hook_next(res_fn(val)); }
         catch (e) { rej(e); }
       };
 
       const real_rej_fn = (err) => {
-        if (!is_function(rej_fn))
-          return rej(err);
-
+        if (!is_function(rej_fn)) { return rej(err); }
         try { hook_next(rej_fn(err)); }
         catch (e) { rej(e); }
       };
@@ -112,16 +108,15 @@ export class MiniPromise {
   /// But if any one of the objects triggered reject, just ignore the result
   /// and reject directly.
   static all(promise_array) {
-    if (!Array.isArray(promise_array))
+    if (!Array.isArray(promise_array)) {
       throw new TypeError("Promise.all need Array object as argument");
-
+    }
     return new MiniPromise((res, rej) => {
       let count = promise_array.length;
       const result = [];
       const handler_of = idx => v => {
         result[idx] = v;
-        if (--count === 0)
-          res(result);
+        if (--count === 0) { res(result); }
       };
       promise_array.forEach((p, idx) => p.then(handler_of(idx), rej));
     });
@@ -130,23 +125,22 @@ export class MiniPromise {
   /// Execute an array of Promise objects, only return the result of the one
   /// who call `then` first.
   static race(promise_array) {
-    if (!Array.isArray(promise_array))
+    if (!Array.isArray(promise_array)) {
       throw new TypeError("Promise.race need Array object as argument");
-
+    }
     return new MiniPromise((res, rej) =>
       promise_array.forEach(p => p.then(res, rej))
     );
   }
 
   static any(promise_array) {
-    if (!Array.isArray(promise_array))
+    if (!Array.isArray(promise_array)) {
       throw new TypeError("Promise.any need Array object as argument");
-
+    }
     return new MiniPromise((res, rej) => {
       let count = promise_array.length;
       const rej_handler = e => {
-        if (--count === 0)
-          rej(e);
+        if (--count === 0) { rej(e); }
       };
       promise_array.forEach(p => p.then(res, rej_handler));
     });

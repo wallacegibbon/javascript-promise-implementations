@@ -62,23 +62,23 @@ export class MiniPromise {
   /// write this `then`.
   then(res_fn, rej_fn) {
     return new MiniPromise((res, rej) => {
-      const hook_next = (r) => {
-        if (is_thenable(r)) { r.then(res, rej); }
-        else { res(r); }
+      const resolve_next_promise = val => {
+        if (is_thenable(val)) { val.then(res, rej); }
+        else { res(val); }
       };
 
       /// Since the argument `val` comes from `on_fulfilled`,
       /// it will never be a Promise object.
       /// (on_fulfilled unwrapped Promise recursively)
-      const real_res_fn = (val) => {
+      const real_res_fn = val => {
         if (!is_function(res_fn)) { return res(val); }
-        try { hook_next(res_fn(val)); }
+        try { resolve_next_promise(res_fn(val)); }
         catch (e) { rej(e); }
       };
 
-      const real_rej_fn = (err) => {
+      const real_rej_fn = err => {
         if (!is_function(rej_fn)) { return rej(err); }
-        try { hook_next(rej_fn(err)); }
+        try { resolve_next_promise(rej_fn(err)); }
         catch (e) { rej(e); }
       };
 

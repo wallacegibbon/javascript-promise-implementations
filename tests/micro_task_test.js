@@ -1,4 +1,4 @@
-import { MiniPromise } from "../mod.js";
+import MiniPromise from "../mod.js";
 
 async function test_1(promise_class) {
   console.log(`[${promise_class.name}] test1 start`);

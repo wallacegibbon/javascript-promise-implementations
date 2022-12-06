@@ -1,4 +1,4 @@
-import { MiniPromise as Promise } from "../mod.js";
+import Promise from "../mod.js";
 
 Promise.reject(1)
   .then(d => console.log("---", d))

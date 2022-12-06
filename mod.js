@@ -1,13 +1,12 @@
-export class MiniPromise {
+/// A Promise is nothing more than an object that holds some states and wraps the callback
+/// to make it looks better.
+/// promise.then(fn1, fn2) may get called for multiple times, use array to store those functions.
 
-  /// A Promise is nothing more than an object that holds some states and wraps
-  /// the callback to make it looks better.
-  ///
-  /// promise.then(fn1, fn2) may get called for multiple times, use array to
-  /// store those functions.
-  ///
-  /// @param {Function} fn
+export default class MiniPromise {
   constructor(fn) {
+    if (typeof this !== "object") {
+      throw new TypeError('Promise must be constructed with keyword "new"');
+    }
     if (!is_function(fn)) {
       throw new TypeError("constructor argument have to be a function");
     }
@@ -35,20 +34,12 @@ export class MiniPromise {
     );
   }
 
-  /// Unlike `val`, when `err` is a Promise Object, it will not be unwrapped as
-  /// this is not how Promise should be used.
-  /// The built-in Promise will pass it to rejected_fns directly.
-  /// To make things clear, my implementation will reject a clearer information.
   on_rejected(err) {
     if (this.status !== "pending") {
       throw new Error(`on_rejected was called multiple times`);
     }
-    if (is_thenable(err)) {
-      this.err = "on_rejected does not accept Promise argument";
-    } else {
-      this.err = err;
-    }
     this.status = "rejected";
+    this.err = err;
     queueMicrotask(() =>
       this.rejected_fns.forEach(fn => fn(err))
     );
@@ -100,6 +91,13 @@ export class MiniPromise {
   /// `promise.catch(rej_fn)` is nothing but `promise.then(null, rej_fn)`
   catch(rej_fn) {
     return this.then(null, rej_fn);
+  }
+
+  finally(finally_fn) {
+    return this.then(
+      val => MiniPromise.resolve(finally_fn()).then(() => val),
+      err => MiniPromise.resolve(finally_fn()).then(() => { throw err; }),
+    );
   }
 
   /// Execute an array of Promise objects, collect all result(call `then`) and

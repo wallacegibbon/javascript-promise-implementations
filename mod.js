@@ -45,31 +45,17 @@ export default class MiniPromise {
     );
   }
 
-  /// `promise.then` is the most important method for Promise. It's the key to
-  /// hold a Promise chain.
-  ///
-  /// If res_fn or rej_fn is not function, just ignore them, and pass value of
-  /// the previous promise directly to the next promise. Just like you didn't
-  /// write this `then`.
   then(res_fn, rej_fn) {
     return new MiniPromise((res, rej) => {
-      const resolve_next_promise = val => {
-        if (is_thenable(val)) { val.then(res, rej); }
-        else { res(val); }
-      };
-
-      /// Since the argument `val` comes from `on_fulfilled`,
-      /// it will never be a Promise object.
-      /// (on_fulfilled unwrapped Promise recursively)
       const real_res_fn = val => {
         if (!is_function(res_fn)) { return res(val); }
-        try { resolve_next_promise(res_fn(val)); }
+        try { res(res_fn(val)); }
         catch (e) { rej(e); }
       };
 
       const real_rej_fn = err => {
         if (!is_function(rej_fn)) { return rej(err); }
-        try { resolve_next_promise(rej_fn(err)); }
+        try { res(rej_fn(err)); }
         catch (e) { rej(e); }
       };
 
@@ -88,7 +74,6 @@ export default class MiniPromise {
     });
   }
 
-  /// `promise.catch(rej_fn)` is nothing but `promise.then(null, rej_fn)`
   catch(rej_fn) {
     return this.then(null, rej_fn);
   }
@@ -144,26 +129,19 @@ export default class MiniPromise {
     });
   }
 
-  /// If you need to start a Promise chain from a basic value, just use this.
-  /// e.g. Promise.resolve(1).then(console.log)
   static resolve(v) {
     return new MiniPromise((res, _) => res(v));
   }
 
-  /// Just like Promise.resolve, but start with an rejection.
   static reject(v) {
     return new MiniPromise((_, rej) => rej(v));
   }
-
-} // class MiniPromise
-
+}
 
 function is_thenable(obj) {
-  return obj && is_function(obj.then);
+  return is_function(obj?.then);
 }
 
 function is_function(obj) {
   return typeof obj === "function";
 }
-
-

@@ -125,16 +125,18 @@ export default class TypedPromise<T, Err = unknown> {
         result[idx] = v;
         if (--count === 0) { res(result); }
       };
-      promise_array.forEach((p, idx) => p.then(handler_of(idx), rej));
+      promise_array.forEach((p, idx) =>
+        p.then(handler_of(idx), rej)
+      );
     });
   }
 
   static race(
     promise_array: Array<TypedPromise<unknown>>
   ): TypedPromise<unknown> {
-    return new TypedPromise((res, rej) =>
-      promise_array.forEach(p => p.then(res, rej))
-    );
+    return new TypedPromise((res, rej) => promise_array.forEach(
+      p => p.then(res, rej)
+    ));
   }
 
   static any(

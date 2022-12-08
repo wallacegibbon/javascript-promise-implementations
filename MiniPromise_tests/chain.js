@@ -20,7 +20,7 @@
  *
  */
 
-import Promise from "../mod.js";
+import Promise from "../MiniPromise.js";
 
 function taskA(v) {
   console.log("taskA, arg:", v);

@@ -1,4 +1,4 @@
-import MiniPromise from "../mod.js";
+import MiniPromise from "../MiniPromise.js";
 
 function fancy(promise_class) {
   console.log(`>>>>>> example of ${promise_class.name}`);

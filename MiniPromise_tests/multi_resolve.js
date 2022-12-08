@@ -1,4 +1,4 @@
-import Promise from "../mod.js";
+import Promise from "../MiniPromise.js";
 
 const a = new Promise((res, _) => setTimeout(res, 2000));
 

@@ -1,4 +1,4 @@
-import MiniPromise from "../mod.js";
+import MiniPromise from "../MiniPromise.js";
 
 function delay(ms) {
   return new Promise((res, _) => setTimeout(res, ms));

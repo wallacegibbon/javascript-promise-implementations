@@ -13,50 +13,61 @@ export default class MiniPromise {
     this.status = "pending";
     this.fulfilled_fns = [];
     this.rejected_fns = [];
-    fn(
-      val => this.on_fulfilled(val),
-      err => this.on_rejected(err),
-    );
+
+    /// If `val` is a Promise Object, it will be unwrapped recursively.
+    const on_fulfilled = val => {
+      if (is_thenable(val)) {
+        val.then(on_fulfilled, on_rejected);
+        return;
+      }
+      if (this.status !== "pending") {
+        throw new Error(`on_fulfilled was called multiple times`);
+      }
+      this.status = "fulfilled";
+      this.val = val;
+      queueMicrotask(() =>
+        this.fulfilled_fns.forEach(fn => fn(val))
+      );
+    };
+
+    const on_rejected = err => {
+      if (this.status !== "pending") {
+        throw new Error(`on_rejected was called multiple times`);
+      }
+      this.status = "rejected";
+      this.err = err;
+      queueMicrotask(() =>
+        this.rejected_fns.forEach(fn => fn(err))
+      );
+    };
+
+    fn(on_fulfilled, on_rejected);
   }
 
-  /// If `val` is a Promise Object, it will be unwrapped recursively.
-  on_fulfilled(val) {
-    if (is_thenable(val)) {
-      return val.then(this.on_fulfilled.bind(this), this.on_rejected.bind(this));
-    }
-    if (this.status !== "pending") {
-      throw new Error(`on_fulfilled was called multiple times`);
-    }
-    this.status = "fulfilled";
-    this.val = val;
-    queueMicrotask(() =>
-      this.fulfilled_fns.forEach(fn => fn(val))
-    );
-  }
-
-  on_rejected(err) {
-    if (this.status !== "pending") {
-      throw new Error(`on_rejected was called multiple times`);
-    }
-    this.status = "rejected";
-    this.err = err;
-    queueMicrotask(() =>
-      this.rejected_fns.forEach(fn => fn(err))
-    );
-  }
-
-  then(res_fn, rej_fn) {
+  then(handle_value, handle_error) {
     return new MiniPromise((res, rej) => {
       const real_res_fn = val => {
-        if (!is_function(res_fn)) { return res(val); }
-        try { res(res_fn(val)); }
-        catch (e) { rej(e); }
+        if (!is_function(handle_value)) {
+          res(val);
+          return;
+        }
+        try {
+          res(handle_value(val));
+        } catch (e) {
+          rej(e);
+        }
       };
 
       const real_rej_fn = err => {
-        if (!is_function(rej_fn)) { return rej(err); }
-        try { res(rej_fn(err)); }
-        catch (e) { rej(e); }
+        if (!is_function(handle_error)) {
+          rej(err);
+          return;
+        }
+        try {
+          res(handle_error(err));
+        } catch (e) {
+          rej(e);
+        }
       };
 
       switch (this.status) {

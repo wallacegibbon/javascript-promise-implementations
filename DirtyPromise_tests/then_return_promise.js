@@ -1,4 +1,4 @@
-import MiniPromise from "../MiniPromise.js";
+import DirtyPromise from "../DirtyPromise.js";
 
 function delay(ms) {
   return new Promise((res, _) => setTimeout(res, ms));
@@ -17,10 +17,10 @@ Promise.resolve(1)
     e => console.error("*e:", e)
   );
 
-MiniPromise.resolve(1)
+DirtyPromise.resolve(1)
   .then(() => delay2(2000))
   .then(
-    v => console.log("MiniPromise", v),
+    v => console.log("DirtyPromise", v),
     e => console.error("*e:", e)
   );
 

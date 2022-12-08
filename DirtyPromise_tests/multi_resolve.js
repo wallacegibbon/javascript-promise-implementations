@@ -1,4 +1,4 @@
-import Promise from "../MiniPromise.js";
+import Promise from "../DirtyPromise.js";
 
 const a = new Promise((res, _) => setTimeout(res, 2000));
 

@@ -2,7 +2,7 @@
 /// to make it looks better.
 /// promise.then(fn1, fn2) may get called for multiple times, use array to store those functions.
 
-export default class MiniPromise {
+export default class DirtyPromise {
   constructor(fn) {
     if (typeof this !== "object") {
       throw new TypeError('Promise must be constructed with keyword "new"');
@@ -45,8 +45,8 @@ export default class MiniPromise {
   }
 
   then(handle_value, handle_error) {
-    return new MiniPromise((res, rej) => {
-      const real_res_fn = val => {
+    return new DirtyPromise((res, rej) => {
+      const wrapped_handle_value = val => {
         if (!is_function(handle_value)) {
           res(val);
           return;
@@ -58,7 +58,7 @@ export default class MiniPromise {
         }
       };
 
-      const real_rej_fn = err => {
+      const wrapped_handle_error = err => {
         if (!is_function(handle_error)) {
           rej(err);
           return;
@@ -72,27 +72,31 @@ export default class MiniPromise {
 
       switch (this.status) {
         case "pending":
-          this.fulfilled_fns.push(real_res_fn);
-          this.rejected_fns.push(real_rej_fn);
+          this.fulfilled_fns.push(wrapped_handle_value);
+          this.rejected_fns.push(wrapped_handle_error);
           break;
         case "fulfilled":
-          queueMicrotask(() => real_res_fn(this.val));
+          queueMicrotask(() =>
+            wrapped_handle_value(this.val)
+          );
           break;
         case "rejected":
-          queueMicrotask(() => real_rej_fn(this.err));
+          queueMicrotask(() =>
+            wrapped_handle_error(this.err)
+          );
           break;
       }
     });
   }
 
-  catch(rej_fn) {
-    return this.then(null, rej_fn);
+  catch(handle_error) {
+    return this.then(null, handle_error);
   }
 
-  finally(finally_fn) {
+  finally(handle_fn) {
     return this.then(
-      val => MiniPromise.resolve(finally_fn()).then(() => val),
-      err => MiniPromise.resolve(finally_fn()).then(() => { throw err; }),
+      val => DirtyPromise.resolve(handle_fn()).then(() => val),
+      err => DirtyPromise.resolve(handle_fn()).then(() => { throw err; }),
     );
   }
 
@@ -105,7 +109,7 @@ export default class MiniPromise {
     if (!Array.isArray(promise_array)) {
       throw new TypeError("Promise.all need Array object as argument");
     }
-    return new MiniPromise((res, rej) => {
+    return new DirtyPromise((res, rej) => {
       let count = promise_array.length;
       const result = [];
       const handler_of = idx => v => {
@@ -122,7 +126,7 @@ export default class MiniPromise {
     if (!Array.isArray(promise_array)) {
       throw new TypeError("Promise.race need Array object as argument");
     }
-    return new MiniPromise((res, rej) =>
+    return new DirtyPromise((res, rej) =>
       promise_array.forEach(p => p.then(res, rej))
     );
   }
@@ -131,7 +135,7 @@ export default class MiniPromise {
     if (!Array.isArray(promise_array)) {
       throw new TypeError("Promise.any need Array object as argument");
     }
-    return new MiniPromise((res, rej) => {
+    return new DirtyPromise((res, rej) => {
       let count = promise_array.length;
       const rej_handler = e => {
         if (--count === 0) { rej(e); }
@@ -141,11 +145,11 @@ export default class MiniPromise {
   }
 
   static resolve(v) {
-    return new MiniPromise((res, _) => res(v));
+    return new DirtyPromise((res, _) => res(v));
   }
 
   static reject(v) {
-    return new MiniPromise((_, rej) => rej(v));
+    return new DirtyPromise((_, rej) => rej(v));
   }
 }
 

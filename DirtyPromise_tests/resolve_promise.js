@@ -1,4 +1,4 @@
-import MiniPromise from "../MiniPromise.js";
+import DirtyPromise from "../DirtyPromise.js";
 
 function sleep(ms) {
   return new Promise((res, _) => setTimeout(res, ms));
@@ -10,6 +10,6 @@ new Promise((res, _) => res(sleep(2000))).then(() =>
 );
 
 console.log("--- mini Promise ---");
-new MiniPromise((res, _) => res(sleep(2000))).then(() =>
+new DirtyPromise((res, _) => res(sleep(2000))).then(() =>
   console.log("mini Promise.")
 );

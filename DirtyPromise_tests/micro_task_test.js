@@ -1,4 +1,4 @@
-import MiniPromise from "../MiniPromise.js";
+import DirtyPromise from "../DirtyPromise.js";
 
 async function test_1(promise_class) {
   console.log(`[${promise_class.name}] test1 start`);
@@ -30,8 +30,8 @@ async function test_2(promise_class) {
 
 test_1(Promise);
 await new Promise((res, _) => setTimeout(res, 500));
-test_1(MiniPromise);
+test_1(DirtyPromise);
 await new Promise((res, _) => setTimeout(res, 500));
 test_2(Promise);
 await new Promise((res, _) => setTimeout(res, 500));
-test_2(MiniPromise);
+test_2(DirtyPromise);

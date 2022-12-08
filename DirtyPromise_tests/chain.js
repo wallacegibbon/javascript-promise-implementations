@@ -20,7 +20,7 @@
  *
  */
 
-import Promise from "../MiniPromise.js";
+import Promise from "../DirtyPromise.js";
 
 function taskA(v) {
   console.log("taskA, arg:", v);

@@ -1,4 +1,4 @@
-import MiniPromise from "../MiniPromise.js";
+import DirtyPromise from "../DirtyPromise.js";
 
 function fancy(promise_class) {
   console.log(`>>>>>> example of ${promise_class.name}`);
@@ -31,4 +31,4 @@ function fancy(promise_class) {
 
 fancy(Promise);
 await new Promise((res, _) => setTimeout(res, 500));
-fancy(MiniPromise);
+fancy(DirtyPromise);

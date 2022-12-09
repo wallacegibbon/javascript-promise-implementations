@@ -11,14 +11,13 @@ export default class DirtyPromise {
       throw new TypeError("constructor argument have to be a function");
     }
     this.status = "pending";
-    this.fulfilled_fns = [];
-    this.rejected_fns = [];
+    this.resolve_fns = [];
+    this.reject_fns = [];
 
     /// If `val` is a Promise Object, it will be unwrapped recursively.
     const on_fulfilled = val => {
       if (is_thenable(val)) {
-        val.then(on_fulfilled, on_rejected);
-        return;
+        return val.then(on_fulfilled, on_rejected);
       }
       if (this.status !== "pending") {
         throw new Error(`on_fulfilled was called multiple times`);
@@ -26,10 +25,9 @@ export default class DirtyPromise {
       this.status = "fulfilled";
       this.val = val;
       queueMicrotask(() =>
-        this.fulfilled_fns.forEach(fn => fn(val))
+        this.resolve_fns.forEach(fn => fn(val))
       );
     };
-
     const on_rejected = err => {
       if (this.status !== "pending") {
         throw new Error(`on_rejected was called multiple times`);
@@ -37,53 +35,34 @@ export default class DirtyPromise {
       this.status = "rejected";
       this.err = err;
       queueMicrotask(() =>
-        this.rejected_fns.forEach(fn => fn(err))
+        this.reject_fns.forEach(fn => fn(err))
       );
     };
-
     fn(on_fulfilled, on_rejected);
   }
 
   then(handle_value, handle_error) {
     return new DirtyPromise((res, rej) => {
       const wrapped_handle_value = val => {
-        if (!is_function(handle_value)) {
-          res(val);
-          return;
-        }
-        try {
-          res(handle_value(val));
-        } catch (e) {
-          rej(e);
-        }
+        if (!is_function(handle_value)) { return res(val); }
+        try { res(handle_value(val)); }
+        catch (e) { rej(e); }
       };
-
       const wrapped_handle_error = err => {
-        if (!is_function(handle_error)) {
-          rej(err);
-          return;
-        }
-        try {
-          res(handle_error(err));
-        } catch (e) {
-          rej(e);
-        }
+        if (!is_function(handle_error)) { return rej(err); }
+        try { res(handle_error(err)); }
+        catch (e) { rej(e); }
       };
-
       switch (this.status) {
         case "pending":
-          this.fulfilled_fns.push(wrapped_handle_value);
-          this.rejected_fns.push(wrapped_handle_error);
+          this.resolve_fns.push(wrapped_handle_value);
+          this.reject_fns.push(wrapped_handle_error);
           break;
         case "fulfilled":
-          queueMicrotask(() =>
-            wrapped_handle_value(this.val)
-          );
+          queueMicrotask(() => wrapped_handle_value(this.val));
           break;
         case "rejected":
-          queueMicrotask(() =>
-            wrapped_handle_error(this.err)
-          );
+          queueMicrotask(() => wrapped_handle_error(this.err));
           break;
       }
     });
@@ -100,11 +79,6 @@ export default class DirtyPromise {
     );
   }
 
-  /// Execute an array of Promise objects, collect all result(call `then`) and
-  /// return them in an array.
-  ///
-  /// But if any one of the objects triggered reject, just ignore the result
-  /// and reject directly.
   static all(promise_array) {
     if (!Array.isArray(promise_array)) {
       throw new TypeError("Promise.all need Array object as argument");
@@ -120,8 +94,6 @@ export default class DirtyPromise {
     });
   }
 
-  /// Execute an array of Promise objects, only return the result of the one
-  /// who call `then` first.
   static race(promise_array) {
     if (!Array.isArray(promise_array)) {
       throw new TypeError("Promise.race need Array object as argument");

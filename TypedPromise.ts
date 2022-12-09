@@ -12,11 +12,13 @@ type WrappedThenRejFn<Err> = (err: Err) => void;
 type OnFulFilledFn<T1> = (val: ValueOrPromisedValue<T1>) => void;
 type OnRejectedFn<Err> = (err: Err) => void;
 
-type PromiseStatus = "resolved" | "rejected" | "pending";
+type PromiseStatus<T, Err> =
+  | { name: "resolved", payload: T }
+  | { name: "rejected", payload: Err }
+  | { name: "pending", payload: undefined };
 
 export default class TypedPromise<T, Err = unknown> {
-  private status: PromiseStatus = "pending";
-  private payload: T | unknown;
+  private status: PromiseStatus<T, Err> = { name: "pending", payload: undefined };
   private resolve_fns: Array<WrappedThenResFn<T>> = [];
   private reject_fns: Array<WrappedThenRejFn<Err>> = [];
 
@@ -25,22 +27,21 @@ export default class TypedPromise<T, Err = unknown> {
   ) {
     const on_fulfilled: OnFulFilledFn<T> = val => {
       if (val instanceof TypedPromise<T>) {
-        val.then(
-          on_fulfilled,
-          on_rejected as ThenRejFn<unknown, unknown>
-        );
-        return;
+        return val.then(on_fulfilled, on_rejected as ThenRejFn<unknown, unknown>);
       }
-      /// if program reached here, val will be of type T.
-      this.status = "resolved";
-      this.payload = val;
+      if (this.status.name !== "pending") {
+        throw new Error(`on_fulfilled was called multiple times`);
+      }
+      this.status = { name: "resolved", payload: val };
       queueMicrotask(
         () => this.resolve_fns.forEach(f => f(val))
       );
     };
     const on_rejected: OnRejectedFn<Err> = err => {
-      this.status = "rejected";
-      this.payload = err;
+      if (this.status.name !== "pending") {
+        throw new Error(`on_rejected was called multiple times`);
+      }
+      this.status = { name: "rejected", payload: err };
       queueMicrotask(
         () => this.reject_fns.forEach(f => f(err))
       );
@@ -54,41 +55,27 @@ export default class TypedPromise<T, Err = unknown> {
   ): TypedPromise<T2, Err2> {
     return new TypedPromise((res, rej) => {
       const wrapped_handle_value: WrappedThenResFn<T> = val => {
-        if (!is_function(handle_value)) {
-          res(val as unknown as T2);
-          return;
-        }
-        try {
-          res(handle_value(val));
-        } catch (e) {
-          rej(e);
-        }
+        if (!is_function(handle_value)) { return res(val as unknown as T2); }
+        try { res(handle_value(val)); }
+        catch (e) { rej(e); }
       };
       const wrapped_handle_error: WrappedThenRejFn<Err> = err => {
-        if (!is_function(handle_error)) {
-          rej(err as unknown as Err2);
-          return;
-        }
-        try {
-          res(handle_error(err));
-        } catch (e) {
-          rej(e);
-        }
+        if (!is_function(handle_error)) { return rej(err as unknown as Err2); }
+        try { res(handle_error(err)); }
+        catch (e) { rej(e); }
       };
-      switch (this.status) {
+      switch (this.status.name) {
         case "pending":
           this.resolve_fns.push(wrapped_handle_value);
           this.reject_fns.push(wrapped_handle_error);
           break;
         case "resolved":
-          queueMicrotask(() =>
-            wrapped_handle_value(this.payload as T)
-          );
+          const value = this.status.payload;
+          queueMicrotask(() => wrapped_handle_value(value));
           break;
         case "rejected":
-          queueMicrotask(() =>
-            wrapped_handle_error(this.payload as Err)
-          );
+          const error = this.status.payload;
+          queueMicrotask(() => wrapped_handle_error(error));
           break;
       }
     });

@@ -3,9 +3,9 @@
 
 import Promise from "../DirtyPromise.js";
 
-const a = new Promise(resolve => resolve(100));
-const b = a.then(value => console.log("value is", value));
-const c = b.catch(e => console.error(e));
+let a = new Promise(resolve => resolve(100));
+let b = a.then(value => console.log("value is", value));
+let c = b.catch(e => console.error(e));
 
 console.log("a is:", a, ",\nb is:", b, ",\nc is:", c);
 

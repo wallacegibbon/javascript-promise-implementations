@@ -65,4 +65,3 @@ Promise.resolve(1)
   .catch(console.error);
 
 console.log("last line");
-

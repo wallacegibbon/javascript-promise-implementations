@@ -6,9 +6,10 @@ async function test_1(promise_class) {
   new promise_class((res, _rej) => {
     console.log(`[${promise_class.name}] test1 emmm...`);
     res();
-  }).then(() => {
-    console.log(`[${promise_class.name}] test1 then`);
-  });
+  })
+    .then(() => {
+      console.log(`[${promise_class.name}] test1 then`);
+    });
 
   console.log(`[${promise_class.name}] test1 end`);
 }
@@ -20,9 +21,10 @@ async function test_2(promise_class) {
   new promise_class((res, _rej) => {
     console.log(`[${promise_class.name}] test2 emmm...`);
     res1 = res;
-  }).then(() => {
-    console.log(`[${promise_class.name}] test2 then`);
-  });
+  })
+    .then(() => {
+      console.log(`[${promise_class.name}] test2 then`);
+    });
 
   res1();
   console.log(`[${promise_class.name}] test2 end`);

@@ -1,9 +1,9 @@
 import Promise from "../DirtyPromise.js";
 
-const p1 = new Promise((res, _) => setTimeout(() => res("p1"), 2000));
-const p2 = new Promise((res, _) => setTimeout(() => res("p2"), 3000));
-const p3 = new Promise((_, rej) => setTimeout(() => rej("p3"), 1000));
-const p4 = new Promise((_, rej) => setTimeout(() => rej("p4"), 4000));
+let p1 = new Promise((res, _) => setTimeout(() => res("p1"), 2000));
+let p2 = new Promise((res, _) => setTimeout(() => res("p2"), 3000));
+let p3 = new Promise((_, rej) => setTimeout(() => rej("p3"), 1000));
+let p4 = new Promise((_, rej) => setTimeout(() => rej("p4"), 4000));
 
 Promise.all([p1, p2, p3]).then(
   r => console.log(`Promise.all result: ${r}`),
@@ -31,4 +31,3 @@ Promise.any([p3, p4]).then(
 );
 
 console.log("...");
-

@@ -3,17 +3,17 @@ type PromiseStatus<T, Err> =
   | { name: "rejected", payload: Err }
   | { name: "pending", payload: undefined };
 
-type ThenOnFulfilledFn<T> = (v: T) => void;
-type ThenOnRejectedFn<Err> = (e: Err) => void;
+type ThenOnFulfilledFn<T> = (v: T) => any;
+type ThenOnRejectedFn<Err> = (e: Err) => any;
 type ClusurePromiseExecutor<T, Err> = (res: ThenOnFulfilledFn<T>, rej: ThenOnRejectedFn<Err>) => void;
 
 export let create = <T, Err = unknown>(executor: ClusurePromiseExecutor<T, Err>) => {
-  let status: PromiseStatus<T, Err> = { name: "pending", payload: undefined };
-  let resolve_fns: Array<ThenOnRejectedFn<T>> = [];
+  let resolve_fns: Array<ThenOnFulfilledFn<T>> = [];
   let reject_fns: Array<ThenOnRejectedFn<Err>> = [];
+  let status: PromiseStatus<T, Err> = { name: "pending", payload: void 0 };
 
   let wrapped_res = val => {
-    if (status.name !== "pending") throw new Error(`on_fulfilled was called multiple times`);
+    if (status.name !== "pending") throw new Error(`wrapped_res was called multiple times`);
     /// !IMPORTANT! This is why nested promises are unwrapped.
     if (typeof val?.then === "function") return val.then(wrapped_res, wrapped_rej);
     status = { name: "resolved", payload: val };
@@ -21,14 +21,14 @@ export let create = <T, Err = unknown>(executor: ClusurePromiseExecutor<T, Err>)
   };
 
   let wrapped_rej = err => {
-    if (status.name !== "pending") throw new Error(`on_rejected was called multiple times`);
+    if (status.name !== "pending") throw new Error(`wrapped_rej was called multiple times`);
     status = { name: "rejected", payload: err };
     queueMicrotask(() => reject_fns.forEach(f => f(err)));
   };
 
   executor(wrapped_res, wrapped_rej);
 
-  let then_fn = (onfulfilled?: ThenOnFulfilledFn<T> | null, onrejected?: ThenOnRejectedFn<Err>) =>
+  let then_fn = (onfulfilled?: ThenOnFulfilledFn<T>, onrejected?: ThenOnRejectedFn<Err>) =>
     create((res, rej) => {
       let wrapped_res = val => {
         if (typeof onfulfilled !== "function") return res(val);
@@ -62,7 +62,7 @@ export let create = <T, Err = unknown>(executor: ClusurePromiseExecutor<T, Err>)
       }
     });
 
-  let catch_fn = onrejected => then_fn(null, onrejected);
+  let catch_fn = onrejected => then_fn(void 0, onrejected);
 
   let finally_fn = (handle_fn: () => unknown) => then_fn(
     v => resolve(handle_fn()).then(() => v),

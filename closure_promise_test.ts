@@ -1,5 +1,12 @@
 import * as promise from "./closure_promise.ts";
 
+try {
+  promise.create((res, _) => { res(0); res(0); })
+    .catch(console.log);
+} catch (e) {
+  console.log("this should be executed");
+}
+
 let sleep = milliseconds => promise.create((res, _) => setTimeout(res, milliseconds));
 
 console.log("before sleep.");

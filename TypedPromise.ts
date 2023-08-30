@@ -4,10 +4,9 @@
 /// The More explicit version:
 type ValueOrPromisedValue<T> = T | TypedPromise<T> | TypedPromise<ValueOrPromisedValue<T>>;
 
+/// !TODO: Make ThenResFn, WrappedThenResFn and OnFulFilledFn the same type to simplify code.
 type ThenResFn<T1, T2> = ((val: T1) => ValueOrPromisedValue<T2>) | null | undefined;
 type ThenRejFn<T2, Err> = ((err: Err) => ValueOrPromisedValue<T2>) | null | undefined;
-
-/// !TODO: change code to make WrappedThenResFn and OnFulFilledFn the same type.
 type WrappedThenResFn<T1> = (val: T1) => void;
 type WrappedThenRejFn<Err> = (err: Err) => void;
 type OnFulFilledFn<T1> = (val: ValueOrPromisedValue<T1>) => void;

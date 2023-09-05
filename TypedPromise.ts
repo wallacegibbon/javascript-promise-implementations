@@ -13,12 +13,12 @@ type OnFulFilledFn<T1> = (val: ValueOrPromisedValue<T1>) => void;
 type OnRejectedFn<Err> = (err: Err) => void;
 
 type PromiseStatus<T, Err> =
-  | { name: "resolved", payload: T }
-  | { name: "rejected", payload: Err }
-  | { name: "pending", payload: undefined };
+  | {name: "resolved", payload: T}
+  | {name: "rejected", payload: Err}
+  | {name: "pending", payload: undefined};
 
 export default class TypedPromise<T, Err = unknown> {
-  private status: PromiseStatus<T, Err> = { name: "pending", payload: undefined };
+  private status: PromiseStatus<T, Err> = {name: "pending", payload: undefined};
   private resolve_fns: Array<WrappedThenResFn<T>> = [];
   private reject_fns: Array<WrappedThenRejFn<Err>> = [];
 
@@ -29,7 +29,7 @@ export default class TypedPromise<T, Err = unknown> {
       if (this.status.name !== "pending")
         throw new Error(`on_fulfilled was called multiple times`);
 
-      this.status = { name: "resolved", payload: val };
+      this.status = {name: "resolved", payload: val};
       queueMicrotask(() => this.resolve_fns.forEach(f => f(val)));
     };
 
@@ -37,7 +37,7 @@ export default class TypedPromise<T, Err = unknown> {
       if (this.status.name !== "pending")
         throw new Error(`on_rejected was called multiple times`);
 
-      this.status = { name: "rejected", payload: err };
+      this.status = {name: "rejected", payload: err};
       queueMicrotask(() => this.reject_fns.forEach(f => f(err)));
     };
 

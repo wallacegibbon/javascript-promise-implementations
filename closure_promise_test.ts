@@ -1,7 +1,7 @@
 import * as promise from "./closure_promise.ts";
 
 try {
-  promise.create((res, _) => { res(0); res(0); })
+  promise.create((res, _) => {res(0); res(0);})
     .catch(console.log);
 } catch (e) {
   console.log("this should be executed");

@@ -1,7 +1,7 @@
 type PromiseStatus<T, Err> =
-  | { name: "resolved", payload: T }
-  | { name: "rejected", payload: Err }
-  | { name: "pending", payload: undefined };
+  | {name: "resolved", payload: T}
+  | {name: "rejected", payload: Err}
+  | {name: "pending", payload: undefined};
 
 type ThenOnFulfilledFn<T> = (v: T) => any;
 type ThenOnRejectedFn<Err> = (e: Err) => any;
@@ -10,19 +10,19 @@ type ClusurePromiseExecutor<T, Err> = (res: ThenOnFulfilledFn<T>, rej: ThenOnRej
 export let create = <T, Err = unknown>(executor: ClusurePromiseExecutor<T, Err>) => {
   let resolve_fns: Array<ThenOnFulfilledFn<T>> = [];
   let reject_fns: Array<ThenOnRejectedFn<Err>> = [];
-  let status: PromiseStatus<T, Err> = { name: "pending", payload: void 0 };
+  let status: PromiseStatus<T, Err> = {name: "pending", payload: void 0};
 
   let wrapped_res = val => {
     if (status.name !== "pending") throw new Error(`wrapped_res was called multiple times`);
     /// !IMPORTANT! This is why nested promises are unwrapped.
     if (typeof val?.then === "function") return val.then(wrapped_res, wrapped_rej);
-    status = { name: "resolved", payload: val };
+    status = {name: "resolved", payload: val};
     queueMicrotask(() => resolve_fns.forEach(f => f(val)));
   };
 
   let wrapped_rej = err => {
     if (status.name !== "pending") throw new Error(`wrapped_rej was called multiple times`);
-    status = { name: "rejected", payload: err };
+    status = {name: "rejected", payload: err};
     queueMicrotask(() => reject_fns.forEach(f => f(err)));
   };
 

@@ -76,7 +76,7 @@ export default class DirtyPromise {
   finally(handle_fn) {
     return this.then(
       val => DirtyPromise.resolve(handle_fn()).then(() => val),
-      err => DirtyPromise.resolve(handle_fn()).then(() => { throw err; }),
+      err => DirtyPromise.resolve(handle_fn()).then(() => {throw err;}),
     );
   }
 

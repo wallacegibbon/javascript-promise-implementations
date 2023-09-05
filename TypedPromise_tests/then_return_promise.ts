@@ -17,4 +17,3 @@ TypedPromise.resolve(1)
     v => console.log("TypedPromise", v),
     e => console.error("*e:", e)
   );
-
